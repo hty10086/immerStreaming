@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="https://www.immerstreaming.com/css">
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script> (function flexible(window, document) { var docEl = document.documentElement; var dpr = window.devicePixelRatio || 1; function setBodyFontSize() { if (document.body) { document.body.style.fontSize = 12 * dpr + "px"; } else { document.addEventListener("DOMContentLoaded", setBodyFontSize); } } setBodyFontSize(); function setRemUnit() { var rem = docEl.clientWidth / 10; docEl.style.fontSize = rem + "px"; } setRemUnit(); window.addEventListener("resize", setRemUnit); window.addEventListener("pageshow", function (e) { if (e.persisted) { setRemUnit(); } }); if (dpr >= 2) { var fakeBody = document.createElement("body"); var testElement = document.createElement("div"); testElement.style.border = ".5px solid transparent"; fakeBody.appendChild(testElement); docEl.appendChild(fakeBody); if (testElement.offsetHeight === 1) { docEl.classList.add("hairlines"); } docEl.removeChild(fakeBody); } })(window, document); </script>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    div {
+        width: calc(100rem / 64);
+        height: calc(100rem / 64);
+        font-size: calc(100rem / 64);
+    }
+</style>
+
+<script>
+    var socket = io.connect('https://www.immerstreaming.com');
+    var userNumber = -1
+    var baselineArray = new Array();
+    window.onload = function (){
+        socket.emit('initialRequest', { Req: "Give"});
+        var userInput = window.prompt("Please input your user ID");
+        socket.emit("requestUNo", {uInput: userInput});
+        socket.on('getUNo', (message) => {
+            userNumber = message.uNo;
+        });
+        setFont();
+        window.addEventListener("resize", function () {
+
+            setFont();
+        })
+        function setFont() {
+            var div = document.querySelector("div");
+            div.style.fontSize = document.querySelector("html").style.fontSize;
+
+        }
+
+
+
+
+
+    }
+
+    socket.on('getBaseline', (message) => {
+        var uIdx = message.uIdx;
+        baselineArray[uIdx] = message.baseline;
+
+    });
+
+    socket.on('newClientMSG', (message) => {
+        if (message.YNO == "Yes"){
+
+            var cell = document.getElementById(message.Number);
+            cell.style.visibility = 'visible';
+            // cell.className += `heart${message.Number}`;
+        }
+
+    });
+    socket.on('vMSG', (message) => {
+        var heartNo = message.cIndex;
+        var HR = parseInt(message.hr);
+        var gValue = 0;
+        var gValue1 = Math.floor((HR/100)*255);
+
+        if (gValue1 > 255){
+            gValue = 255;
+        }else {
+            gValue = gValue1;
+        }
+        var heartSymbol = document.getElementById(String(heartNo))
+        var base = baselineArray[heartNo]
+        if (HR > base){
+            var style = document.createElement('style');
+            style.innerHTML =`.heart${heartNo}:before,\n` +
+                `.heart${heartNo}:after {background: rgb(255, ${255-gValue}, 0);}`;
+            document.head.appendChild(style);
+        }else{
+            var style = document.createElement('style');
+            style.innerHTML =`.heart${heartNo}:before,\n` +
+                `.heart${heartNo}:after {background: rgb(0, ${gValue}, 255);}`;
+            document.head.appendChild(style);
+        }
+
+
+        if (heartNo == userNumber){
+            document.getElementsByClassName("heartBig").item(0).style.animation = `beat ${60/HR}s infinite ease-in`;
+
+
+            if (HR > base){
+                var style = document.createElement('style');
+                style.innerHTML =`.heartBig:before,\n` +
+                    `.heartBig:after {background: rgb(255, ${255-gValue}, 0);}`;
+                document.head.appendChild(style);
+            }else{
+                var style = document.createElement('style');
+                style.innerHTML =`.heartBig:before,\n` +
+                    `.heartBig:after {background: rgb(0, ${gValue}, 255);}`;
+                document.head.appendChild(style);
+            }
+
+        }
+
+
+
+    });
+</script>
+<body style="background: #000000">
+<div class="left">
+    <!--<iframe width="1120 em" height="630 em" src="https://www.youtube.com/embed/223eI1x6PsQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>-->
+    <iframe src="https://www.youtube.com/embed/--trHcZ8MD4" style="height:3.78em;width:6.72em;" title="YouTube video player"></iframe>
+    <p style="color: white; font-size: 0.15rem; width:6.72rem">Please tap your Apple Watch screen every 70s to avoid it sleep</p>
+
+
+</div>
+<div class="right">
+    <table border="0" id="TB">
+        <tr>
+            <td><div class="heart0" id="0"></div></td>
+            <td><div class="heart1" id="1"></div></td>
+            <td><div class="heart2" id="2"></div></td>
+            <td><div class="heart3" id="3"></div></td>
+        </tr>
+        <tr>
+            <td><div class="heart4" id="4"></div></td>
+            <td><div class="heart5" id="5"></div></td>
+            <td><div class="heart6" id="6"></div></td>
+            <td><div class="heart7" id="7"></div></td>
+        </tr>
+        <tr>
+            <td><div class="heart8" id="8"></div></td>
+            <td><div class="heart9" id="9"></div></td>
+            <td><div class="heart10" id="10"></div></td>
+            <td><div class="heart11" id="11"></div></td>
+        </tr>
+        <tr>
+            <td><div class="heart12" id="12"></div></td>
+            <td><div class="heart13" id="13"></div></td>
+            <td><div class="heart14" id="14"></div></td>
+            <td><div class="heart15" id="15"></div></td>
+        </tr>
+    </table>
+
+    <div class="heartBig"></div>
+
+</div>
+
+</body>
+
+
+</html>
